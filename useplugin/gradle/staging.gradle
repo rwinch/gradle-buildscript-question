@@ -1,0 +1,28 @@
+import org.cloudfoundry.gradle.tasks.*
+
+buildscript {
+	repositories {
+		mavenCentral()
+		mavenLocal()
+	}
+	dependencies {
+		classpath("org.cloudfoundry:cf-gradle-plugin:${cfPluginVersion}")
+	}
+}
+
+
+apply plugin: 'cloudfoundry'
+
+
+task(bug, type: CreateServiceCloudFoundryTask) {
+	cloudfoundry {
+		services {
+			[
+				"my-p-mysql" {
+					label = "p-mysql"
+					plan = "100mb"
+				}
+			]
+		}
+	}
+}
