@@ -6,6 +6,7 @@ buildscript {
 		mavenLocal()
 	}
 	dependencies {
+		classpath("com.bmuschko:gradle-tomcat-plugin:$tomcatPluginVersion")
 		classpath("org.cloudfoundry:cf-gradle-plugin:${cfPluginVersion}")
 	}
 }
