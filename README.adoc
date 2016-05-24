@@ -1,0 +1,70 @@
+Simplified example of Gradle plugin ClassLoading issue.
+The real issue can be seen in https://github.com/pivotalsoftware/pivotal-cla/tree/bug-staging[pivotalsoftware/pivotal-cla/tree/bug-staging]
+
+# To reproduce
+
+* Clone the project
+* Install the plugin
+
++
+
+[source,bash]
+----
+$ cd plugin
+$ ./gradlew install
+----
+
+* Use the plugin
+
++
+
+[source,bash]
+----
+$ cd ../useplugin
+$ ./gradlew bug --stacktrace
+:bug FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':bug'.
+> No signature of method: org.cloudfoundry.gradle.tasks.ServiceCloudFoundryHelper$_createServices_closure1.doCall() is applicable for argument types: (org.cloudfoundry.gradle.CloudFoundryServiceExtension) values: [org.cloudfoundry.gradle.CloudFoundryServiceExtension@81c5da9]
+  Possible solutions: doCall(org.cloudfoundry.gradle.CloudFoundryServiceExtension), findAll(), findAll(), isCase(java.lang.Object), isCase(java.lang.Object)
+  The following classes appear as argument class and as parameter class, but are defined by different class loader:
+  org.cloudfoundry.gradle.CloudFoundryServiceExtension (defined by 'org.gradle.api.internal.initialization.loadercache.DefaultClassLoaderCache$HashedMutableURLClassLoader@585427e' and 'org.gradle.api.internal.initialization.loadercache.DefaultClassLoaderCache$HashedMutableURLClassLoader@4b1c84a9')
+  If one of the method suggestions matches the method you wanted to call, 
+  then check your class loader setup.
+
+* Try:
+Run with --info or --debug option to get more log output.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':bug'.
+	...
+Caused by: groovy.lang.MissingMethodException: No signature of method: org.cloudfoundry.gradle.tasks.ServiceCloudFoundryHelper$_createServices_closure1.doCall() is applicable for argument types: (org.cloudfoundry.gradle.CloudFoundryServiceExtension) values: [org.cloudfoundry.gradle.CloudFoundryServiceExtension@81c5da9]
+Possible solutions: doCall(org.cloudfoundry.gradle.CloudFoundryServiceExtension), findAll(), findAll(), isCase(java.lang.Object), isCase(java.lang.Object)
+The following classes appear as argument class and as parameter class, but are defined by different class loader:
+org.cloudfoundry.gradle.CloudFoundryServiceExtension (defined by 'org.gradle.api.internal.initialization.loadercache.DefaultClassLoaderCache$HashedMutableURLClassLoader@585427e' and 'org.gradle.api.internal.initialization.loadercache.DefaultClassLoaderCache$HashedMutableURLClassLoader@4b1c84a9')
+If one of the method suggestions matches the method you wanted to call, 
+then check your class loader setup.
+	at org.cloudfoundry.gradle.tasks.ServiceCloudFoundryHelper.createServices(ServiceCloudFoundryHelper.groovy:23)
+	at org.cloudfoundry.gradle.tasks.CreateServiceCloudFoundryTask$_createService_closure1.doCall(CreateServiceCloudFoundryTask.groovy:46)
+	at org.cloudfoundry.gradle.tasks.CreateServiceCloudFoundryTask.withCloudFoundryClient(CreateServiceCloudFoundryTask.groovy:36)
+	at org.cloudfoundry.gradle.tasks.CreateServiceCloudFoundryTask.createService(CreateServiceCloudFoundryTask.groovy:45)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:75)
+	at org.gradle.api.internal.project.taskfactory.AnnotationProcessingTaskFactory$StandardTaskAction.doExecute(AnnotationProcessingTaskFactory.java:228)
+	at org.gradle.api.internal.project.taskfactory.AnnotationProcessingTaskFactory$StandardTaskAction.execute(AnnotationProcessingTaskFactory.java:221)
+	at org.gradle.api.internal.project.taskfactory.AnnotationProcessingTaskFactory$StandardTaskAction.execute(AnnotationProcessingTaskFactory.java:210)
+	at org.gradle.api.internal.AbstractTask$TaskActionWrapper.execute(AbstractTask.java:585)
+	at org.gradle.api.internal.AbstractTask$TaskActionWrapper.execute(AbstractTask.java:568)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeAction(ExecuteActionsTaskExecuter.java:80)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeActions(ExecuteActionsTaskExecuter.java:61)
+	... 68 more
+----
+
+# Workarounds
+
+These are some workarounds, but unfortunately it doesn't help with my original issue.
+
+* https://github.com/rwinch/gradle-buildscript-question/tree/fix-matching-classpath
+* https://github.com/rwinch/gradle-buildscript-question/tree/fix-plugin-class
