@@ -11,7 +11,7 @@ buildscript {
 }
 
 
-apply plugin: 'cloudfoundry'
+apply plugin: org.cloudfoundry.gradle.CloudFoundryPlugin
 
 
 task(bug, type: CreateServiceCloudFoundryTask) {
